@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор доходности недвижимости Пхукет</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a365d 0%, #2d5a87 50%, #4a90b8 100%);
+            color: white;
+            padding: 40px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><pattern id="grain" width="100" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="30" cy="5" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="15" r="1.2" fill="rgba(255,255,255,0.08)"/><circle cx="70" cy="8" r="0.8" fill="rgba(255,255,255,0.06)"/><circle cx="85" cy="18" r="1.1" fill="rgba(255,255,255,0.07)"/></pattern></defs><rect width="100" height="20" fill="url(%23grain)"/></svg>') repeat;
+            pointer-events: none;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            font-weight: 300;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .calculator-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            min-height: 800px;
+        }
+
+        .input-section {
+            padding: 50px 60px;
+            background: #ffffff;
+        }
+
+        .results-section {
+            background: #f8f9fa;
+            border-left: 1px solid #e9ecef;
+            padding: 50px 40px;
+            position: sticky;
+            top: 0;
+            height: fit-content;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1a365d;
+            margin: 40px 0 25px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e9ecef;
+            position: relative;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 2px;
+            background: #4a90b8;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4a90b8;
+            box-shadow: 0 0 0 3px rgba(74, 144, 184, 0.1);
+        }
+
+        input:hover, select:hover {
+            border-color: #9ca3af;
+        }
+
+        .input-with-symbol {
+            position: relative;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-weight: 500;
+            z-index: 1;
+        }
+
+        .input-with-symbol input {
+            padding-left: 40px;
+        }
+
+        .main-result {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .roi-label {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .roi-display {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #1a365d;
+            margin-bottom: 15px;
+            font-family: 'Georgia', serif;
+        }
+
+        .roi-status {
+            font-size: 0.95rem;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .roi-excellent { 
+            background: #dcfce7; 
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .roi-good { 
+            background: #fef3c7; 
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        
+        .roi-poor { 
+            background: #fee2e2; 
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .details-section {
+            margin-bottom: 35px;
+        }
+
+        .details-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a365d;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #f3f4f6;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .breakdown-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .tip, .warning {
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .tip {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            color: #0c4a6e;
+        }
+
+        .warning {
+            background: #fffbeb;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90b8, #6bb6ff);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #f3f4f6;
+            margin-bottom: 15px;
+        }
+
+        .metric-title {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a365d;
+        }
+
+        .payback-visualization {
+            margin-top: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #f3f4f6;
+        }
+
+        .agency-info {
+            background: linear-gradient(135deg, #1a365d 0%, #2d5a87 50%, #4a90b8 100%);
+            color: white;
+            padding: 50px 60px;
+            margin-top: 0;
+        }
+
+        .agency-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .agency-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+            .calculator-wrapper {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-section {
+                position: static;
+                border-left: none;
+                border-top: 1px solid #e9ecef;
+            }
+            
+            .input-section, .results-section {
+                padding: 40px 30px;
+            }
+            
+            .header, .agency-info {
+                padding: 30px 40px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .roi-display {
+                font-size: 2.8rem;
+            }
+            
+            .input-section, .results-section {
+                padding: 25px 20px;
+            }
+            
+            .header, .agency-info {
+                padding: 25px 20px;
+            }
+        }
+
+        .detail-item, .metric-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .detail-item:hover, .metric-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        input, select {
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>Честный калькулятор доходности</h1>
+                <p>Недвижимость Пхукета | Профессиональный анализ ROI</p>
+            </div>
+        </div>
+
+        <div class="calculator-wrapper">
+            <div class="input-section">
+                <div class="section-title">Параметры инвестиции</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="propertyType">Тип недвижимости</label>
+                        <select id="propertyType">
+                            <option value="condo">Кондоминиум</option>
+                            <option value="villa">Вилла</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="purchasePrice">Стоимость покупки</label>
+                        <div class="input-with-symbol">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="purchasePrice" value="120000" min="50000" max="10000000">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="propertySize">Площадь (кв. метров)</label>
+                        <input type="number" id="propertySize" value="35" min="25" max="500">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Локация на Пхукете</label>
+                        <select id="location">
+                            <option value="patong">Патонг</option>
+                            <option value="kata">Ката</option>
+                            <option value="karon">Карон</option>
+                            <option value="kamala">Камала</option>
+                            <option value="bang-tao" selected>Банг Тао (премиум)</option>
+                            <option value="rawai">Раваи</option>
+                            <option value="nai-yang">Най Янг</option>
+                            <option value="nai-harn">Най Харн</option>
+                            <option value="other">Другая локация</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="distanceToBeach">Расстояние до пляжа (метров)</label>
+                    <input type="number" id="distanceToBeach" value="700" min="0" max="5000">
+                </div>
+
+                <div class="section-title">Параметры аренды</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dailyRate">Суточная ставка аренды</label>
+                        <div class="input-with-symbol">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="dailyRate" value="80" min="20" max="1000" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="occupancyRate">Заполняемость (%)</label>
+                        <input type="number" id="occupancyRate" value="60" min="0" max="100">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="seasonalityHigh">Высокий сезон (дней в году)</label>
+                        <input type="number" id="seasonalityHigh" value="150" min="0" max="365">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="seasonalMultiplier">Коэффициент высокого сезона</label>
+                        <input type="number" id="seasonalMultiplier" value="1.7" min="1" max="3" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="vacancyPeriod">Простой между гостями (дней/год)</label>
+                    <input type="number" id="vacancyPeriod" value="21" min="0" max="200">
+                </div>
+
+                <div class="section-title">Операционные расходы</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="managementFee">Комиссия управляющей (%)</label>
+                        <input type="number" id="managementFee" value="30" min="0" max="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maintenanceCost">Содержание недвижимости</label>
+                        <div class="input-with-symbol">
+                            <span class="currency-symbol">$/мес</span>
+                            <input type="number" id="maintenanceCost" value="67" min="50" max="2000" style="padding-left: 60px;" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="insuranceCost">Страхование (за кв.м/год)</label>
+                        <div class="input-with-symbol">
+                            <span class="currency-symbol">$/год</span>
+                            <input type="number" id="insuranceCost" value="350" min="0" max="5000" style="padding-left: 60px;" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="repairReserve">Резерв на ремонты</label>
+                        <div class="input-with-symbol">
+                            <span class="currency-symbol">$/год</span>
+                            <input type="number" id="repairReserve" value="1500" min="0" max="10000" style="padding-left: 60px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip">
+                    <strong>💡 Важно учесть:</strong> Комиссия управляющей компании включает маркетинг, уборку, встречу гостей и текущее обслуживание. Стандартная ставка: 25-35% от валового дохода. Расходы на содержание рассчитаны по ставке 70 бат/кв.м по текущему курсу.
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ Дисклеймер:</strong> Расчеты носят оценочный характер. Фактическая доходность может отличаться в зависимости от рыночных условий и качества управления недвижимостью. Налоги рассчитываются по ставке 15% с налогооблагаемой базы (чистый доход минус 30% вычет).
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="main-result">
+                    <div class="roi-label">Чистая годовая доходность</div>
+                    <div class="roi-display" id="roiDisplay">0.0%</div>
+                    <div class="roi-status" id="roiStatus">Выполняется расчет...</div>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Ключевые показатели</div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-title">Валовый доход</div>
+                        <div class="metric-value" id="grossIncome">$0</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-title">Чистый доход</div>
+                        <div class="metric-value" id="netIncome">$0</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-title">Ежемесячно</div>
+                        <div class="metric-value" id="monthlyIncome">$0</div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <div class="details-title">Структура расходов</div>
+                    <div class="breakdown-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Управление</span>
+                            <span class="detail-value" id="managementCost">$0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Содержание</span>
+                            <span class="detail-value" id="maintenanceTotal">$0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Страховка</span>
+                            <span class="detail-value" id="insuranceTotal">$0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Резерв</span>
+                            <span class="detail-value" id="repairTotal">$0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Налоги</span>
+                            <span class="detail-value" id="taxTotal">$0</span>
+                        </div>
+                        <div class="detail-item" style="border-top: 2px solid #e5e7eb; margin-top: 8px; padding-top: 12px; font-weight: 600;">
+                            <span class="detail-label">Итого расходы</span>
+                            <span class="detail-value" id="totalExpenses">$0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payback-visualization">
+                    <div class="details-title">Анализ окупаемости</div>
+                    <div class="detail-item">
+                        <span class="detail-label">Срок окупаемости</span>
+                        <span class="detail-value" id="paybackPeriod">0 лет</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="paybackProgress"></div>
+                    </div>
+                    <div class="detail-item" style="margin-top: 15px;">
+                        <span class="detail-label">Прибыль за 5 лет</span>
+                        <span class="detail-value" id="fiveYearProfit">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="agency-info">
+            <div class="agency-title">Kalinka Thailand</div>
+            <div class="agency-content">
+                <p>Мы - международное агентство недвижимости премиум-класса, которое помогает людям со всего мира уверенно инвестировать и комфортно жить на Пхукете.</p>
+                
+                <p>Каждый год наши клиенты приобретают недвижимости на сумму более 1 миллиарда рублей. Ежемесячно более 20 человек доверяют нам и становятся счастливыми владельцами недвижимости на острове.</p>
+                
+                <p>Главная ценность нашего агентства — безупречная репутация и глубокая экспертность. Мы гордимся тем, что наши клиенты становятся нашими друзьями и рекомендуют нас своим близким.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Коэффициенты для локаций и базовые ставки аренды за кв.м
+        const locationData = {
+            'patong': { multiplier: 1.2, dailyRatePerSqm: 2.21 },
+            'kata': { multiplier: 1.0, dailyRatePerSqm: 1.77 },
+            'karon': { multiplier: 0.95, dailyRatePerSqm: 1.68 },
+            'kamala': { multiplier: 1.15, dailyRatePerSqm: 2.03 },
+            'bang-tao': { multiplier: 1.25, dailyRatePerSqm: 2.48 },
+            'rawai': { multiplier: 0.85, dailyRatePerSqm: 1.5 },
+            'nai-yang': { multiplier: 0.9, dailyRatePerSqm: 1.59 },
+            'nai-harn': { multiplier: 1.1, dailyRatePerSqm: 1.94 },
+            'other': { multiplier: 1.0, dailyRatePerSqm: 1.77 }
+        };
+
+        const propertyTypeMultipliers = {
+            'condo': 1.0,
+            'villa': 1.4
+        };
+
+        // Курс: 1 USD = 33 THB (приблизительно)
+        const THB_TO_USD = 33;
+
+        function calculateDistanceImpact(distance) {
+            if (distance <= 100) return 1.2;
+            if (distance <= 300) return 1.1;
+            if (distance <= 500) return 1.0;
+            if (distance <= 1000) return 0.9;
+            if (distance <= 2000) return 0.8;
+            return 0.7;
+        }
+
+        function updateDependentFields() {
+            const propertyType = document.getElementById('propertyType').value;
+            const location = document.getElementById('location').value;
+            const propertySize = parseFloat(document.getElementById('propertySize').value) || 35;
+            const distanceToBeach = parseFloat(document.getElementById('distanceToBeach').value) || 700;
+
+            // Обновляем стоимость покупки
+            const defaultPrice = propertyType === 'villa' ? 500000 : 120000;
+            document.getElementById('purchasePrice').value = defaultPrice;
+
+            // Обновляем комиссию управляющей и заполняемость в зависимости от типа недвижимости
+            if (propertyType === 'villa') {
+                document.getElementById('managementFee').value = 40;
+                document.getElementById('occupancyRate').value = 45;
+            } else {
+                document.getElementById('managementFee').value = 30;
+                document.getElementById('occupancyRate').value = 60;
+            }
+
+            // Рассчитываем суточную ставку на основе локации и площади
+            const locationInfo = locationData[location];
+            const propertyMultiplier = propertyTypeMultipliers[propertyType];
+            const distanceMultiplier = calculateDistanceImpact(distanceToBeach);
+            
+            const dailyRate = Math.round(
+                locationInfo.dailyRatePerSqm * 
+                propertySize * 
+                propertyMultiplier * 
+                distanceMultiplier
+            );
+            
+            document.getElementById('dailyRate').value = dailyRate;
+
+            // Обновляем содержание (70 бат за кв.м в месяц)
+            const maintenanceCostUSD = Math.round((70 * propertySize) / THB_TO_USD);
+            document.getElementById('maintenanceCost').value = maintenanceCostUSD;
+
+            // Обновляем страховку (10$ за кв.м в год)
+            const insuranceCostUSD = 10 * propertySize;
+            document.getElementById('insuranceCost').value = insuranceCostUSD;
+        }
+
+        function formatCurrency(amount) {
+            return '$' + Math.round(amount).toLocaleString('en-US');
+        }
+
+        function calculateROI() {
+            const purchasePrice = parseFloat(document.getElementById('purchasePrice').value) || 0;
+            const dailyRate = parseFloat(document.getElementById('dailyRate').value) || 0;
+            const occupancyRate = parseFloat(document.getElementById('occupancyRate').value) || 0;
+            const managementFee = parseFloat(document.getElementById('managementFee').value) || 0;
+            const maintenanceCost = parseFloat(document.getElementById('maintenanceCost').value) || 0;
+            const insuranceCost = parseFloat(document.getElementById('insuranceCost').value) || 0;
+            const repairReserve = parseFloat(document.getElementById('repairReserve').value) || 0;
+            const vacancyPeriod = parseFloat(document.getElementById('vacancyPeriod').value) || 0;
+            const seasonalityHigh = parseFloat(document.getElementById('seasonalityHigh').value) || 0;
+            const seasonalMultiplier = parseFloat(document.getElementById('seasonalMultiplier').value) || 1;
+
+            // Рассчитываем дни аренды в году
+            const effectiveRentalDays = Math.floor(((365 - vacancyPeriod) * occupancyRate) / 100);
+            
+            // Рассчитываем доход с учетом сезонности
+            const highSeasonDays = Math.min(seasonalityHigh, effectiveRentalDays);
+            const lowSeasonDays = effectiveRentalDays - highSeasonDays;
+            
+            const highSeasonIncome = highSeasonDays * dailyRate * seasonalMultiplier;
+            const lowSeasonIncome = lowSeasonDays * dailyRate;
+            const grossIncome = highSeasonIncome + lowSeasonIncome;
+
+            // Рассчитываем расходы
+            const managementCost = grossIncome * (managementFee / 100);
+            const maintenanceTotal = maintenanceCost * 12;
+            const insuranceTotal = insuranceCost;
+            const repairTotal = repairReserve;
+            
+            // Рассчитываем налоги: 15% от (чистый доход - 30% вычет)
+            const grossProfit = grossIncome - managementCost - maintenanceTotal - insuranceTotal - repairTotal;
+            const taxableIncome = Math.max(0, grossProfit * 0.7); // Вычет 30%
+            const taxTotal = taxableIncome * 0.15; // Налог 15%
+            
+            const totalExpenses = managementCost + maintenanceTotal + insuranceTotal + repairTotal + taxTotal;
+            const netIncome = grossIncome - totalExpenses;
+            
+            // Рассчитываем ROI
+            const roi = purchasePrice > 0 ? (netIncome / purchasePrice) * 100 : 0;
+            
+            updateDisplay(roi, grossIncome, netIncome, totalExpenses, managementCost, maintenanceTotal, insuranceTotal, repairTotal, taxTotal, purchasePrice);
+        }
+
+        function updateDisplay(roi, grossIncome, netIncome, totalExpenses, managementCost, maintenanceTotal, insuranceTotal, repairTotal, taxTotal, purchasePrice) {
+            document.getElementById('roiDisplay').textContent = roi.toFixed(1) + '%';
+            
+            const statusElement = document.getElementById('roiStatus');
+            if (roi >= 8) {
+                statusElement.textContent = 'Отличная инвестиция';
+                statusElement.className = 'roi-status roi-excellent';
+            } else if (roi >= 5) {
+                statusElement.textContent = 'Хорошая инвестиция';
+                statusElement.className = 'roi-status roi-good';
+            } else {
+                statusElement.textContent = 'Низкая доходность';
+                statusElement.className = 'roi-status roi-poor';
+            }
+
+            document.getElementById('grossIncome').textContent = formatCurrency(grossIncome);
+            document.getElementById('netIncome').textContent = formatCurrency(netIncome);
+            document.getElementById('monthlyIncome').textContent = formatCurrency(netIncome / 12);
+
+            document.getElementById('managementCost').textContent = formatCurrency(managementCost);
+            document.getElementById('maintenanceTotal').textContent = formatCurrency(maintenanceTotal);
+            document.getElementById('insuranceTotal').textContent = formatCurrency(insuranceTotal);
+            document.getElementById('repairTotal').textContent = formatCurrency(repairTotal);
+            document.getElementById('taxTotal').textContent = formatCurrency(taxTotal);
+            document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
+
+            const paybackYears = netIncome > 0 ? (purchasePrice / netIncome) : 0;
+            document.getElementById('paybackPeriod').textContent = paybackYears.toFixed(1) + ' лет';
+            document.getElementById('fiveYearProfit').textContent = formatCurrency(netIncome * 5);
+
+            // Progress bar для окупаемости (максимум 20 лет = 100%)
+            const progressPercent = Math.min((paybackYears / 20) * 100, 100);
+            document.getElementById('paybackProgress').style.width = (100 - progressPercent) + '%';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обновляем зависимые поля при изменении основных параметров
+            const dependentTriggers = ['propertyType', 'location', 'propertySize', 'distanceToBeach'];
+            dependentTriggers.forEach(id => {
+                document.getElementById(id).addEventListener('change', function() {
+                    updateDependentFields();
+                    calculateROI();
+                });
+            });
+
+            // Добавляем обработчики для всех остальных полей
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (!dependentTriggers.includes(input.id)) {
+                    input.addEventListener('input', calculateROI);
+                    input.addEventListener('change', calculateROI);
+                }
+            });
+
+            // Инициализация
+            updateDependentFields();
+            calculateROI();
+        });
+    </script>
+</body>
+</html>
